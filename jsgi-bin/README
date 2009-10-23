@@ -1,0 +1,1 @@
+drop these in a /cgi-bin directory after installing spidermonkey or rhino (may need to update JSCLI to point to full executable path)
