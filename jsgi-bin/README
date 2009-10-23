@@ -1,2 +1,24 @@
-drop these in a /cgi-bin directory after installing spidermonkey or rhino
-  (you may need to update JSCLI to point to full executable path)
+motivation
+----------
+Q: does "/bin/sh + /usr/bin/js == instant JSGI container?"
+A: YES, if you don't mind being limited to pure-javascript apps
+     (w/o any other sort of IO or persistence beyond HTTP Cookies!)
+
+Q: what's it good for?
+A: not sure
+
+install
+-------
+HINT: sudo apt-get install spidermonkey-bin && ls -l /usr/bin/smjs
+
+* put myapp.js someplace server-side
+* edit jscgi.sh to point to myapp.js (MYJSGIAPP) and drop it in /cgi-bin
+  (you may need to update JSCLI to point to full js executable path)
+
+usage
+-----
+load up http://<your server>/cgi-bin/jscgi.sh in a browser
+
+git
+---
+http://github.com/timjs/timjs-agnostics/blob/master/jsgi-bin
