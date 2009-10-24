@@ -27,4 +27,4 @@ MyApp = function(something) {
   }
 }
 
-app = MyApp("Fred");
+exports.app = MyApp("Fred");

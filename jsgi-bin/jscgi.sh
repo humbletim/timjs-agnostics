@@ -5,14 +5,35 @@
 
 MYJSGIAPP="myapp.js"
 
+SMJS="/usr/bin/smjs"   #spidermonkey-bin
+RHINO="/usr/bin/rhino" #rhino
+V8="/opt/bin/node"      # v8-shell / derivatives
+
+#JSCLI=$SMJS
+
+JSCLI_ARGS="-f"
+_PREJS="var exports = {};\n"
+
+# do some simple auto-detection
 if [ "$JSCLI" = "" ] ; then
-	JSCLI="js" # or rhino
+	if [ -x $SMJS ] ; then
+		JSCLI=$SMJS
+	elif [ -x $RHINO ] ; then
+		JSCLI=$RHINO
+	elif [ -x $V8 ] ; then
+		JSCLI=$V8
+		JSCLI_ARGS="" # don't want -f
+		# node's print doens't emit trailing newline like smjs/rhino, so fudge it
+		_PREJS="$_PREJS;oprint=print;print=function(){oprint.apply(this,arguments);oprint('\\\n');}"
+	fi
 fi
 
 ######
 
+# shell option to treat input whitespace indifferently
 IFS=
 
+# this part is untested, but might work!
 if [ "$REQUEST_METHOD" = "POST" ] \
 	&& [ "$CONTENT_TYPE" = "application/x-www-form-urlencoded" ] \
 	&& [ ! -z "$CONTENT_LENGTH" ] ; then
@@ -44,7 +65,7 @@ env['jsgi.multiprocess'] = false;
 env['jsgi.run_once'] = true;
 var out;
 try {
-	out = app(env);
+	out = exports.app(env);
 } catch(e) {
   out = {
         status : 500,
@@ -67,11 +88,11 @@ print(body)
 
 ### create a temp file (js/rhino -e "$js" had issues)
 tmpfile="/tmp/jscgi.$$"
-(cat $MYJSGIAPP; echo $envjs) > $tmpfile.js
+(echo $_PREJS; cat $MYJSGIAPP; echo $envjs) > $tmpfile.js
 
 ### launch the JSGI app!
 #echo "$JSCLI -f $tmpfile 1> $tmpfile.stdout 2> $tmpfile.stderr" >> /dev/stderr
-$JSCLI -f $tmpfile.js 1> $tmpfile.stdout 2> $tmpfile.stderr
+$JSCLI $JSCLI_ARGS $tmpfile.js 1> $tmpfile.stdout 2> $tmpfile.stderr
 
 OUTPUT=`cat $tmpfile.stdout`	
 if [ "$OUTPUT" = "" ] ; then
