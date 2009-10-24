@@ -9,11 +9,14 @@ MyApp = function(something) {
 	  body : ["Hello " + something + "!"]
 	};
 		
-		
 	if (/debug=/i.test(env['QUERY_STRING'])) {
 	  for (var p in env)
 		ret.body.push("\n"+p+": "+env[p]);
 	}
+
+	var data = env['jsgi.input'] && env['jsgi.input'].read();
+	if (data)
+	  ret.body.push("\nraw post data: ["+data+"]");
 
 	// JSGI is evolving fast, make headers lower-case
 	if (env['jsgi.version'].join(".") > "0.2") {

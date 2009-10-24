@@ -7,7 +7,8 @@ MYJSGIAPP="myapp.js"
 
 SMJS="/usr/bin/smjs"   #spidermonkey-bin
 RHINO="/usr/bin/rhino" #rhino
-V8="/opt/bin/node"      # v8-shell / derivatives
+V8="/opt/bin/node"     # v8-shell / derivatives
+CSCRIPT="/cygdrive/c/WINDOWS/system32/cscript.exe"  # cygwin/WSH
 
 #JSCLI=$SMJS
 
@@ -25,6 +26,11 @@ if [ "$JSCLI" = "" ] ; then
 		JSCLI_ARGS="" # don't want -f
 		# node's print doens't emit trailing newline like smjs/rhino, so fudge it
 		_PREJS="$_PREJS;oprint=print;print=function(){oprint.apply(this,arguments);oprint('\\\n');}"
+	elif [ -x $CSCRIPT ] ; then
+		JSCLI=$CSCRIPT
+		JSCLI_ARGS="//Nologo"
+		# implement print() via WScript.Echo, .forEach
+		_PREJS="$_PREJS;print=function(){WScript.Echo(Array.apply({},arguments));};Array.prototype.forEach=function(f){for(var i=0;i<this.length;i++)f(this[i]);};"
 	fi
 fi
 
@@ -37,7 +43,8 @@ IFS=
 if [ "$REQUEST_METHOD" = "POST" ] \
 	&& [ "$CONTENT_TYPE" = "application/x-www-form-urlencoded" ] \
 	&& [ ! -z "$CONTENT_LENGTH" ] ; then
- 	read -n $CONTENT_LENGTH POST_DATA
+ 	#read -n $CONTENT_LENGTH POST_DATA #-n option available in bash but not sh
+ 	read POST_DATA
 fi
 
 #### pass through HTTP_ environment vars
@@ -45,7 +52,10 @@ httpenv=$(env|grep -E '^HTTP'|sed -e "s/^\(.*\?\)=\(.*$\)/'\1':'\2',/")
 
 #### here's the inline adaptor code
 envjs=";
-var env = { JSCLI: '$JSCLI', $httpenv };
+var env = { 
+  $httpenv
+  JSCLI: '$JSCLI'
+};
 env['REQUEST_METHOD'] = '$REQUEST_METHOD';
 env['SCRIPT_NAME'] = '$SCRIPT_NAME';
 env['PATH_INFO'] = '$PATH_INFO';
@@ -106,5 +116,3 @@ fi
 
 ### cleanup
 rm -f $tmpfile.*
-
-
