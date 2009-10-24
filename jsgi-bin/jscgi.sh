@@ -5,28 +5,33 @@
 
 MYJSGIAPP="myapp.js"
 
+TMP=/tmp
+
 SMJS="/usr/bin/smjs"   #spidermonkey-bin
 RHINO="/usr/bin/rhino" #rhino
 V8="/opt/bin/node"     # v8-shell / derivatives
 CSCRIPT="/cygdrive/c/WINDOWS/system32/cscript.exe"  # cygwin/WSH
 
 #JSCLI=$SMJS
+#JSCLI_ARGS="-f"
 
-JSCLI_ARGS="-f"
-_PREJS="var exports = {};\n"
+_PREJS="var exports = {};"
 
 # do some simple auto-detection
 if [ "$JSCLI" = "" ] ; then
 	if [ -x $SMJS ] ; then
 		JSCLI=$SMJS
+		JSCLI_ARGS="-f"
 	elif [ -x $RHINO ] ; then
 		JSCLI=$RHINO
+		JSCLI_ARGS="-f"
 	elif [ -x $V8 ] ; then
 		JSCLI=$V8
-		JSCLI_ARGS="" # don't want -f
+		JSCLI_ARGS=""
 		# node's print doens't emit trailing newline like smjs/rhino, so fudge it
 		_PREJS="$_PREJS;oprint=print;print=function(){oprint.apply(this,arguments);oprint('\\\n');}"
 	elif [ -x $CSCRIPT ] ; then
+		TMP=$(cygpath -w $TMP) # to a windows path
 		JSCLI=$CSCRIPT
 		JSCLI_ARGS="//Nologo"
 		# implement print() via WScript.Echo, .forEach
@@ -97,11 +102,11 @@ print(body)
 "
 
 ### create a temp file (js/rhino -e "$js" had issues)
-tmpfile="/tmp/jscgi.$$"
+tmpfile="$TMP/jscgi.$$"
 (echo $_PREJS; cat $MYJSGIAPP; echo $envjs) > $tmpfile.js
 
 ### launch the JSGI app!
-#echo "$JSCLI -f $tmpfile 1> $tmpfile.stdout 2> $tmpfile.stderr" >> /dev/stderr
+#echo "$JSCLI $JSCLI_ARGS $tmpfile 1> $tmpfile.stdout 2> $tmpfile.stderr" >> /dev/stderr
 $JSCLI $JSCLI_ARGS $tmpfile.js 1> $tmpfile.stdout 2> $tmpfile.stderr
 
 OUTPUT=`cat $tmpfile.stdout`	
@@ -112,6 +117,11 @@ if [ "$OUTPUT" = "" ] ; then
 	cat $tmpfile.stderr
 else
 	echo $OUTPUT
+fi
+
+# cygwin / cscript path fixing
+if [ -x /usr/bin/cygpath ] ; then
+	tmpfile=$(cygpath -u $tmpfile) #back to cygwin/unix
 fi
 
 ### cleanup
