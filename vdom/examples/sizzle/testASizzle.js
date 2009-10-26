@@ -127,7 +127,7 @@ function probe(cb) {
 	  return load(f, function() { probe(cb); }); // break / defer
 	else
 	  try { load(f); } catch(e) {} // continue / sync
-  } while (!Function._VDOMROOT_found && (v=sniffs.pop()));
+  } while (!Function._VDOMROOT_found && (Function._VDOMROOT=sniffs.pop()));
   
   if (!Function._VDOMROOT_found)
 	throw new Error("couldn't deduce VDOMROOT!!");
