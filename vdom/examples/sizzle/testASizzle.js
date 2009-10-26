@@ -20,6 +20,7 @@ try {
 
 /* ------------------------------------------------------------------------- */
 // GLUE: async (ie: node, xhr) vs. sync (ie: smjs) load considerations
+// DUPLICATE: src/vdom.sj
 try {
   _ASYNC;
 } catch(e) {
@@ -30,9 +31,10 @@ try {
 	  return node.fs.cat(f, "utf8")
 	  .addCallback(function(js) { 
 					 try{node.compile(js, f);cb(); }catch(e){throw e; }
-				   });
+				   }).addErrback(function(e){ vdom_debug(e); cb(); });
 	};
-	vdom_debug = node.debug;
+	vdom_debug = require('/utils.js').debug;
+	_DEBUG = true; // force debug on
   } else {
 	vdom_debug = (('vdom_debug' in this) ? this.vdom_debug :
 				  (!('document' in this) && typeof(print) == 'function' 
@@ -119,7 +121,7 @@ function probe(cb) {
 	return cb();
   }
 
-  Function._VDOMROOT = Function._VDOMROOT || sniffs.pop();
+  Function._VDOMROOT = sniffs.pop();
   do {
 	var f = Function._VDOMROOT + '/__init__.js';
 	vdom_debug(f);
@@ -192,9 +194,4 @@ function setup(cb) {
 
 /* ------------------------------------------------------------------------- */
 // GLUE: bootstraping
-if (_ASYNC) {
-  onLoad = function() { main(); };
-  // onLoad called by node in a bit
-} else {
-  main(); // TODO: may not be needed always (forgot how modules will do main)
-}
+main();

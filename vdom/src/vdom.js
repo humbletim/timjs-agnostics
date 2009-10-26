@@ -22,7 +22,7 @@ try {
 					 try{node.compile(js, f);cb(); }catch(e){throw e; }
 				   });
 	};
-	vdom_debug = node.debug;
+	vdom_debug = require('/utils.js').debug;
   } else {
 	vdom_debug = (('vdom_debug' in this) ? this.vdom_debug :
 				  (!('document' in this) && typeof(print) == 'function' 

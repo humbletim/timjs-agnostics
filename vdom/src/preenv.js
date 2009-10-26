@@ -138,8 +138,9 @@ XNode.prototype.hasAttribute = function(name) { return !!this.getAttribute(name)
 	js = tmp.toSource();
   else
 	js = tmp.toString();
-
-  XNode.prototype.getElementsByTagName = eval(js.replace('ret = []', 'ret = new XNodeList();'));
+  
+  js = js.replace('ret = []', 'ret = new XNodeList()');
+  XNode.prototype.getElementsByTagName = eval('('+js+')');
 })();
 
 /*

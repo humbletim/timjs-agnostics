@@ -5,7 +5,9 @@ http://github.com/timjs/timjs-agnostics/vdom
 -- git://github.com/timjs/timjs-agnostics.git --
 
 $ cd ./timjs-agnostics/vdom
-$ cat README
+$ make test-rhino
+$ make test-smjs
+$ make test-node
 
 ----------------------------
 vdom is derived from the following projects:
