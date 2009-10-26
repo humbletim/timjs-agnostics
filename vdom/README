@@ -1,0 +1,36 @@
+NOTE - THIS IS AN INCOMPLETE PUSH -- USE FOR SPARE PARTS (AT BEST)
+
+http://github.com/timjs/timjs-agnostics/vdom
+
+-- git://github.com/timjs/timjs-agnostics.git --
+
+$ cd ./timjs-agnostics/vdom
+$ cat README
+
+----------------------------
+vdom is derived from the following projects:
+
+ * env-js: original Pure JavaScript Browser Environment [MIT License]
+    by John Resig <http://ejohn.org/>
+
+ * ajaxslt: An XSLT Processor Library for AJAX Applications [MIT License]
+    by Steffen Meschkat & Google <http://ajaxslt.googlecode.com>
+
+----------------------------
+
+vdom.js is a pure-javascript virtual DOM [also MIT Licenese]
+
+ * Some things are looking like a ServerJS/CommonJS module, but they're not yet
+
+ * it is currently just a proof-of-concept, though should run in any 
+    modern JavaScript VM with getters/setters and a 'load' stub
+
+----------------------------
+
+Some Links:
+http://commonjs.org
+http://code.google.com/p/v8/
+http://nodejs.org/
+http://www.mozilla.org/js/spidermonkey/
+http://www.mozilla.org/rhino/
+

@@ -1,0 +1,22 @@
+WARNING: NOT FIT FOR HUMAN CONSUMPTION
+
+Summary:
+---------
+
+rhino -f testASizzle.js
+smjs -f testASizzle.js
+node testASizzle.js
+...etc
+
+Dependencies:
+-------------
+JavaScript VM w/CLI
+* something somewhere needs to provide a "load" function
+   (if not already known to me (Node/SpiderMonkey/Rhino shells)
+
+Sizzle (http://sizzlejs.com)
+* sizzle.js as available from http://github.com/jeresig/sizzle
+  HINT: wget http://github.com/jeresig/sizzle/raw/master/sizzle.js
+
+
+//eof
