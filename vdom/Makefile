@@ -14,9 +14,21 @@ SLURP = \
 
 SLURP_NAME = $(PACKAGE)-$(VERSION)
 
-$(SLURP_NAME).broken.js: $(SLURP)
-	echo "var _MAKED = '$(SLURP)'.split(' ');\n" > $(SLURP_NAME).broken.js
-	cat $(SLURP) >> $(SLURP_NAME).broken.js
+$(SLURP_NAME).temp.js: $(SLURP)
+	@echo "slurping up files into $(SLURP_NAME).temp.js..."
+	@echo "var _MAKED = '$(SLURP)'.split(' ');\n" > $(SLURP_NAME).temp.js
+	@cat $(SLURP) >> $(SLURP_NAME).temp.js
 
 clean: 
-	rm $(SLURP_NAME).broken.js
+	@rm $(SLURP_NAME).temp.js
+
+test: $(SLURP_NAME).temp.js	
+
+test-smjs: clean test
+	smjs $(SLURP_NAME).temp.js 2>&1 | fgrep '[]'
+
+test-rhino: clean test
+	rhino $(SLURP_NAME).temp.js 2>&1 | fgrep '[]'
+
+test-node: clean test
+	/opt/bin/node $(SLURP_NAME).temp.js 2>&1 | fgrep '[]'

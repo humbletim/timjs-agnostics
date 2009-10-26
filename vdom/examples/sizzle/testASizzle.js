@@ -1,5 +1,9 @@
 // WARNING: NOT FIT FOR HUMAN CONSUMPTION!!
-var _DEBUG = true;
+try {
+  _DEBUG;
+} catch(e) {
+  _DEBUG = false;
+}
 
 /* ---------------------------------------------------------------------------
    this was just an expiriment, but most if not all of the parts are here to
@@ -11,7 +15,7 @@ var _DEBUG = true;
 	     -> load(sizzle) ->
 	        -> testASizzle(window)
 
-   ughhhhly, but someone had to try agnostic approaches! ;)
+   ughhhhly, but someone had to try an agnostic approach! ;)
    ------------------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------- */
@@ -35,7 +39,7 @@ try {
 				   ? print : null));
   }
 }
-if (!_DEBUG || !vdom_debug) vdom_debug = function(){};
+if (_DEBUG === false || !vdom_debug) vdom_debug = function(){};
 
 /* ------------------------------------------------------------------------- */
 // GLUE: i sorta like this style of exceptional-literal feature assertion
@@ -66,10 +70,10 @@ function testASizzle(window) {
 
   //GLUE: better way to make sure our user witnesses the test results?
   try { alert(result); } catch(e) {};
-  throw new Error('\n------------------------------------------------'+
-				  '\nFIXME: how else to contact our user cross-VM??'+
-				  '\n'+result+
-				  '\n------------------------------------------------');
+  throw new Error('\n[] ------------------------------------------------'+
+				  '\n[] FIXME: how else to contact our user cross-VM??'+
+				  '\n[] '+result+
+				  '\n[] ------------------------------------------------');
 }
 
 /* ========================================================================= */
