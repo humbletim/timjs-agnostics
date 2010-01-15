@@ -31,9 +31,9 @@ INTRODUCTION:
 
 INSTALLATION:
 -------------
-    $ git clone git://github.com/timjs/jspr.git
-    $ cd jspr/samples/python
-    $ export JSCLI=[insert your chosen JSCLI binary here]
+    $ git clone git://github.com/timjs/timjs-agnostics.git
+    $ cd timjs-agnostics/jspr/samples/python
+    $ export JSCLI=[insert your chosen JSCLI binary here, ie: rhino / smjs]
     $ ./test.timeout.jsx
 
 SERVICES DEPENDENCIES:
