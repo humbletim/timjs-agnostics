@@ -7,6 +7,8 @@
 
 #### TODO: document this
 
+JSTMP="/var/tmp"
+
 if [ -z "$JSTIMEOUT" ] ; then
 	JSTIMEOUT=3 # max absolute time (seconds)
 fi
@@ -21,7 +23,7 @@ if [ -f "$LINEBUFSO" ] ; then
 fi
 
 export MYPID="$$"
-export tmpfile=/var/tmp/tim.jseval.$$
+export tmpfile="$JSTMP/tim.jseval.$$"
 
 # unique placeholder for synthetic IO boundaries
 null=_x_NULL_jspr_eval_x_
@@ -133,5 +135,5 @@ fi
 	>> /dev/stderr
 
 [ -z "$DEBUG" ] && \
-	fgrep "$null" $tmpfile.stderr >/dev/null && rm $tmpfile $tmpfile.*
+	rm $tmpfile $tmpfile.* #fgrep "$null" $tmpfile.stderr >/dev/null &&
 
