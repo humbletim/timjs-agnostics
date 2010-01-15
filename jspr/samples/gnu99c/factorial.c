@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 		  if (r < 0) r = 0;
 		  json_object_put(obj);
 		  json_object_put(repeat);
-		  fprintf(stderr, "\t[%d]=%s\n", n, json_object_to_json_string(obj));
+		  fprintf(stderr, "running %s(%d) %d times...\n", cmd, n, r);
 		  if (0 == strcmp(cmd, "factorial")) {
 			while (r-- > 0)
 			  ret = factorial(n);
