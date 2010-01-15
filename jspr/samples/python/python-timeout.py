@@ -9,6 +9,11 @@
 
 import sys, urllib, json
 
+try:
+	json.dumps = json.write
+	json.loads = json.read
+except:
+	pass
 null = {}
 
 class TO(object):
@@ -27,7 +32,7 @@ while True:
 	elif (line == "<STDIN>"):
 		sys.stdout.write("\n")
 		continue
-	sys.stderr.write("["+line+"]\n")
+	#sys.stderr.write("["+line+"]\n")
 	parts = line.split(" ") + ["","",""]
 	try:
 		idx, ob, meth, rawargs = [ urllib.unquote(x) for x in parts[:4] ]
@@ -39,7 +44,7 @@ while True:
 			args = []
 		ret = None
 		if (ob == "to"):
-			sys.stderr.write(str((ob, meth, rawargs))+"\n")
+			#sys.stderr.write(str((ob, meth, rawargs))+"\n")
 			if (meth in to.permitted and hasattr(to, meth)):
 				ret = getattr(to, meth)(*args)
 
@@ -57,7 +62,7 @@ while True:
 			t = threading.Timer(float(args[0]) / 1000.0, comp, [s])
 			t.start()
 		else:
-			completion()
+			sys.stdout.write("ERROR: bad cmd (%s)\n" % meth)
 
 		#sys.stdout.write("%d ERROR\n" % len(line))
 	except Exception, e:

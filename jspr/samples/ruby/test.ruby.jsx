@@ -1,4 +1,8 @@
-#! ../../bin/jspr-multipipe ./ruby.rb
+#!/bin/sh
+#// -*- mode: javascript; coding: utf-8; -*-
+python ../../bin/jspr-multipipe ./ruby.rb $0 $*
+exit
+__CODE__
 // -*- mode: javascript; coding: utf-8; -*-
 
 function main() {

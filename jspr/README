@@ -1,4 +1,9 @@
 NOTE: THIS IS AN EARLY PROTOTYPE PUSH (ONLY TESTED ON UBUNTU)
+NOTE: if you see XCPU timeout errors, it could be line buffering
+        try:
+	$ cd jspr/jscli/opt
+	$ sh build.sh
+	and then re-running your .jsx
 
 INTRODUCTION:
 -------------
@@ -40,6 +45,7 @@ RUNTIME DEPENDENCIES:
     + a JSCLI listed below (see jscli/ for trivial patches for V8/JSC shells)
     + a few GNU-style shell tools, such as:
         bash, fgrep, grep -E, sed, cat
+	+ cc isattylinebuf.c (if your JSCLI stalls reading lines)
     + [ your desired services ]
 
 TARGETED JSCLIs (in alphabetical order):

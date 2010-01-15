@@ -1,6 +1,9 @@
-#! ../bin/jspr-multipipe ./python/python-timeout.py ./ruby/ruby.rb
+#!/bin/sh
+#// -*- mode: javascript; coding: utf-8; -*-
+python ../bin/jspr-multipipe ./python/python-timeout.py ./ruby/ruby.rb $0 $*
+exit
+__CODE__
 // -*- mode: javascript; coding: utf-8; -*-
-
 function main() {
   var st = new Date().getTime();
   stdio.write(st);

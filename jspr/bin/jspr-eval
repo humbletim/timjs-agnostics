@@ -15,6 +15,11 @@ if [ -z "$JSMAXCPU" ] ; then
 	JSMAXCPU=1 # max CPU rusage (seconds)
 fi
 
+LINEBUFSO="$(dirname $0)/../jscli/opt/isattylinebuf.so"
+if [ -f "$LINEBUFSO" ] ; then
+	export LD_PRELOAD="${LD_PRELOD}:$LINEBUFSO"
+fi
+
 export MYPID="$$"
 export tmpfile=/var/tmp/tim.jseval.$$
 
@@ -44,7 +49,14 @@ shift $(($#-1))
 	echo "__file__='$1';" 
 
 	# remove first jsx line (shebang)
-	/bin/sed '1d' $1
+
+	declare -i CODEPOS=$(fgrep -n __CODE__ $1 | awk 'BEGIN { FS = ":" }{ print $1 }')
+
+	if [ $CODEPOS -le 0 ] ; then
+		/bin/sed '1d' $1
+	else
+		/bin/sed "1,${CODEPOS}d" $1	
+	fi
 
 	echo "bailout();"
 ) > $tmpfile

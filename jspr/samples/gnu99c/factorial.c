@@ -79,10 +79,18 @@ int main(int argc, char **argv)
 		  int n = json_object_get_int(obj);
 		  int r = json_object_get_int(repeat);
 		  if (r < 0) r = 0;
-		  fprintf(stderr, "\t[%d]=%s\n", n, json_object_to_json_string(obj));
-		  while (r-- > 0)
-			ret = factorial(n);
 		  json_object_put(obj);
+		  json_object_put(repeat);
+		  fprintf(stderr, "\t[%d]=%s\n", n, json_object_to_json_string(obj));
+		  if (0 == strcmp(cmd, "factorial")) {
+			while (r-- > 0)
+			  ret = factorial(n);
+		  } else if (0 == strcmp(cmd, "factorial_r")) {
+			while (r-- > 0)
+			  ret = factorial_r(n);
+		  } else {
+			printf("ERROR: bad json\n");
+		  }
 		}
 		printf("%s %s %lu\n", id, cmd, ret);
 		json_object_put(my_args);

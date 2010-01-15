@@ -1,4 +1,7 @@
-#! ../../bin/jspr-multipipe ./python-timeout.py
+#!/bin/sh
+python ../../bin/jspr-multipipe ./python-timeout.py $0 $*
+exit
+__CODE__
 // -*- mode: javascript; coding: utf-8; -*-
 
 function main() {

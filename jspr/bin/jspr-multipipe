@@ -19,7 +19,9 @@ VERBOSE=0
 
 WAIT4STDIN=0
 
-POPEN_BUFSIZE=-1
+POPEN_BUFSIZE=1
+
+PIPENAMES = {}
 
 def _trace(s,l=2):
 	global VERBOSE
@@ -34,7 +36,9 @@ def poll():
 	global procs
 	jsx_stderr = []
 	blankblank = False
-	while True:
+
+	abort = False
+	while not abort:
 	   	wb = [ ]
 		rb = [  jsx.stderr ]
 		for x in procs.keys():
@@ -46,7 +50,7 @@ def poll():
 			else:
 				_trace("...rb watching %s.stdout\n" % x, 3)
 				rb.append(procs[x]['proc'].stdout)
-				if (VERBOSE >= 1):
+				if (True):#VERBOSE >= 1):
 					_trace("...rb watching %s.stderr\n" % x, 3)
 					rb.append(procs[x]['proc'].stderr)
 			
@@ -65,8 +69,10 @@ def poll():
 		if (jsx.stdin in wb):
 			_trace("...wb watching jsx.stdin\n", 3)
 
-		tt = select.select(rb,wb,[],RLMAXWAIT) 
-		_trace(repr(tt)+"\n", 2)
+		tt = select.select(rb,wb,[],RLMAXWAIT)
+		for p in tt[0] + tt[1] + tt[2]:
+			_trace("%s\n", PIPENAMES[p])
+			
 		
 		if (jsx.stderr in tt[0]):
 			tmp = jsx.stderr.readline().rstrip()
@@ -88,7 +94,7 @@ def poll():
 				blankblank = False
 
 		if (jsx.stdout in tt[0]):
-			if True:#while nbpeek(jsx.stdout, 0.01):
+			if True: #while nbpeek(jsx.stdout, 0.01):
 				tmp = jsx.stdout.readline().rstrip()
 				if (tmp):
 					oldtmp  = tmp
@@ -98,7 +104,7 @@ def poll():
 							ustdin = urllib.quote(GETSTDIN())
 						else:
 							ustdin = ""
-						_trace(">>> jsx.stdin <STDIN> "+ustdin+"\n", 2)
+						_trace(">>> jsx.stdin <STDIN> "+ustdin+"\n", 1)
 						jsx.stdin.write('<STDIN> '+ustdin+"\n")
 						jsx.stdin.flush()
 					else:
@@ -125,25 +131,29 @@ def poll():
 			pkid = procs[x]['proc']
 			pkid_stdout = procs[x]['towrite']
 			prefix = procs[x]['prefix']
+
+			if (pkid.stderr in tt[0]):
+				tmp = pkid.stderr.readline().rstrip()
+				if (tmp):
+					sys.stderr.write("STDERR%s: %s\n" % (x, str(tmp)))
+					_trace("[<< %s.stderr  %s\n"% (x, str(tmp)), 2)					
+					sys.stderr.flush()
+
+
 			if (pkid.stdin in tt[1]):
 				if (procs[x]['toread']):
 					try:
 						_trace(">>> %s.stdin  %s\n"% (x, str(procs[x]['toread'])), 2)
 						pkid.stdin.write("\n".join(procs[x]['toread'])+"\n")
 						procs[x]['toread'] = []
+						pkid.stdin.flush()
 					except IOError:
 						_trace("IOERROR\n", 2)
-						break
-					pkid.stdin.flush()
+						abort = True
 				else:
 					_trace("%s.stdin ready, but no last_line\n" % x, 2)
 			else:
 				pass #_trace("no pkid.stdin\n", 2)
-
-			if (pkid.stderr in tt[0]):
-				tmp = pkid.stderr.readline().rstrip()
-				if (tmp):
-					_trace("[<< %s.stderr  %s\n"% (x, str(tmp)), 2)
 
 			if (pkid.stdout in tt[0]):
 				tmp = pkid.stdout.readline().rstrip()
@@ -159,7 +169,7 @@ def poll():
 			if (jsx.stdin in tt[1]):
 				if (pkid_stdout):
 					try:
-						_trace(">>> jsx.stdin  %s\n"% str(pkid_stdout), 2)
+						_trace(">>> jsx.stdin  %s\n"% str(pkid_stdout), 1)
 						jsx.stdin.write("\n".join(pkid_stdout)+"\n")
 					except IOError:
 						_trace("IOERROR2\n", 2)
@@ -185,13 +195,15 @@ def poll():
 			x['proc'].kill()
 
 	OOPs = []
+	sout = ""
 	for l in jsx_stderr:
 		if (l.startswith("stdout:")):
-			sys.stdout.write(l[8:].replace(r'\N', "\n")+"\n")
+			sout += l[8:].replace(r'\N', "\n")+"\n"
 		elif (l.startswith("stderr:")):
-			_trace("stderr: "+l[8:]+"\n", 1)
+			_trace("stderr: "+l[8:]+"\n", 2)
 		elif l.find("CPU time limit") == -1:
 			OOPs.append(l)
+	sys.stdout.write(sout)
 	if (OOPs):
 		sys.stdout.write("\n")
 		[ sys.stdout.write("OOPS: %s\n"%l) for l in OOPs ]
@@ -237,6 +249,7 @@ def main():
 	global procs
 	global VERBOSE
 	global WAIT4STDIN
+	global PIPENAMES
 	os.nice(5) # make us nicer
 
 	thejsx = None
@@ -260,6 +273,7 @@ def main():
 				thejsx = ss
 			else:
 				ps.append([ss])
+	_trace("thejsxx: %s\n" % str(thejsx), 1)
 	procs = {}
 	for x in ps:
 		if (False and x == ['-']):
@@ -268,14 +282,15 @@ def main():
 				'buf': list()
 				}
 		else:
-			_trace("x=%s\npwd=%s\n" % (x, str(os.getcwd())), 2)
+			_trace("x=%s pwd=%s\n" % (x, str(os.getcwd())), 2)
 			try:
 				proc = subprocess.Popen(x, 
-								 stdout=subprocess.PIPE,
-								 stderr=subprocess.PIPE,
-								 stdin=subprocess.PIPE,
-								 close_fds=True,
-								 bufsize=POPEN_BUFSIZE
+										stdout=subprocess.PIPE,
+										stderr=subprocess.PIPE,
+										stdin=subprocess.PIPE,
+										close_fds=True,
+										bufsize=POPEN_BUFSIZE,
+										universal_newlines=True
 								 )
 			except OSError, e:
 				print "Does executable service %s exist??" % x
@@ -287,6 +302,9 @@ def main():
 				'prefix': os.path.basename(x[0]), #FIXME: may not be uniq!
 				'bindir': os.path.dirname(x[0])
 				}
+			PIPENAMES[proc.stdout] = 'proc.stdout'
+			PIPENAMES[proc.stderr] = 'proc.stderr'
+			PIPENAMES[proc.stdin] = 'proc.stdin'
 
 	jss = [ file(bindir+'/jspr-multipipe.js').read() ]
 
@@ -300,7 +318,11 @@ def main():
 	jss.append("main();loop();")
 	fname = "/var/tmp/tim.jsprmulti.%d.js" % os.getpid()
 	pjsx = [bindir+'/jspr-eval', fname]
-	open(fname, "w").write(file(thejsx).read()+"\n"+"\n".join(jss)+"\n")
+	open(fname, "w").write(
+		file(thejsx).read()+ \
+		"\n"+ \
+		"\n".join(jss)+ \
+		"\n")
 	atexit.register(os.unlink, fname)
 	try:
 		jsx=subprocess.Popen(pjsx,
@@ -308,12 +330,16 @@ def main():
 							 stderr=subprocess.PIPE,
 							 stdout=subprocess.PIPE,
 							 close_fds=True,
-							 bufsize=POPEN_BUFSIZE
+							 shell=False,
+							 bufsize=POPEN_BUFSIZE,
+							 universal_newlines=True
 							 )
 	except OSError, e:
 		print "Does executable jsx %s exist??" % pjsx
 		raise e
-
+	PIPENAMES[jsx.stdout] = 'jsxstdout'
+	PIPENAMES[jsx.stderr] = 'jsx.stderr'
+	PIPENAMES[jsx.stdin] = 'jsx.stdin'
 
 	poll()
 

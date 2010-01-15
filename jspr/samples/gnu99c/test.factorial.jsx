@@ -1,4 +1,8 @@
-#! ../../bin/jspr-multipipe ./factorial
+#!/bin/sh
+#// -*- mode: javascript; coding: utf-8; -*-
+python ../../bin/jspr-multipipe ./factorial $0 $*
+exit
+__CODE__
 // -*- mode: javascript; coding: utf-8; -*-
 
 function jsfactorial(n)
