@@ -1,0 +1,59 @@
+NOTE: THIS IS AN EARLY PROTOTYPE PUSH (ONLY TESTED ON UBUNTU)
+
+INTRODUCTION:
+-------------
+    JSPR is my experiment to arbitrarily and quickly map non-JavaScript
+    aspects from other languages/runtimes into the JavaScript space.
+
+    JSPR might be a good fit for:
+
+        * Rapid Application Design
+        * Vetting common & shared JS interfaces
+        * Utility Scripting
+        * Cross-platform (JS-managed) Unit Testing
+        * VM comparisons and benchmarking (with normalized externals)
+        * ... if nothing else, for curiosities
+
+    JSPR utilizes what I'm calling "Line-Based JS Services" (TODO: document
+    this trivial spec somewhere).  Such services are implemented over simple
+    STDIO and more specifically an ASCII + (CR)LF protocol.
+
+    JSPR is released under an MIT license.  Some of the samples may
+    use code licensed under different terms (see COPYING and/or source
+    headers in each samples/ folder for details).
+
+    Copyright (c) 2009-2010 Tim
+
+INSTALLATION:
+-------------
+    $ git clone git://github.com/timjs/jspr.git
+    $ cd jspr/samples/python
+    $ export JSCLI=[insert your chosen JSCLI binary here]
+    $ ./test.timeout.jsx
+
+SERVICES DEPENDENCIES:
+----------------------
+    You decide! (that's sort of the idea... ;)
+
+RUNTIME DEPENDENCIES:
+---------------------
+    + a JSCLI listed below (see jscli/ for trivial patches for V8/JSC shells)
+    + a few GNU-style shell tools, such as:
+        bash, fgrep, grep -E, sed, cat
+    + [ your desired services ]
+
+TARGETED JSCLIs (in alphabetical order):
+    -------------------------------------------------------------------------
+      JSCLI       : Project                                  : Status
+     -------------+------------------------------------------+---------------
+      cscript.exe | Windows Scripting Host (WSH)             | [possible]
+      jsc         | Apple WebKit JavaScriptCore              | COMPLETE (*)
+      node        | Node.js (V8) Shell                       | INCOMPLETE (+)
+      rhino       | Mozilla Rhino                            | COMPLETE
+      smjs        | Mozilla SpiderMonkey (spidermonkey-bin)  | COMPLETE
+      v8-shell    | Google V8                                | COMPLETE (*)
+      zest        | JuiceJS / Zest (SpiderMonkey) REPL       | [possible?]
+     ------------------------------------------------------------------------
+            (*) source patch required   (+) needs more testing
+
+// EOF

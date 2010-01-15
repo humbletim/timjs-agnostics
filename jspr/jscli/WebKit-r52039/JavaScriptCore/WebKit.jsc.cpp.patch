@@ -1,0 +1,13 @@
+385a386
+>         if (dump) {
+387,389c388,389
+< 			  fprintf(stderr, "Exception: %s\n", completion.value().toString(globalObject->globalExec()).ascii());
+<             else if (dump) {
+< 
+---
+>                 printf("Exception: %s\n", completion.value().toString(globalObject->globalExec()).ascii());
+>             else
+436c436
+< 		  fprintf(stderr, "Exception: %s\n", completion.value().toString(globalObject->globalExec()).ascii());
+---
+>             printf("Exception: %s\n", completion.value().toString(globalObject->globalExec()).ascii());

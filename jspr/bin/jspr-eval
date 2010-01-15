@@ -1,0 +1,125 @@
+#!/bin/bash
+
+# JavaScript Portable Runtime
+# jspr-eval: line-based, CPU-marshalled JSX runner
+# Copyright 2009 (c) Tim
+# Released under the MIT license
+
+#### TODO: document this
+
+if [ -z "$JSTIMEOUT" ] ; then
+	JSTIMEOUT=3 # max absolute time (seconds)
+fi
+
+if [ -z "$JSMAXCPU" ] ; then
+	JSMAXCPU=1 # max CPU rusage (seconds)
+fi
+
+export MYPID="$$"
+export tmpfile=/var/tmp/tim.jseval.$$
+
+# unique placeholder for synthetic IO boundaries
+null=_x_NULL_jspr_eval_x_
+
+# currently supported: Rhino, spidermonkey-bin, (patched) V8 shell.cc
+if [ ! "$JSCLI" ] ; then
+	JSCLI=smjs
+fi
+
+# jsx is final parameter; provides for $1 == file.jsx
+shift $(($#-1))
+
+# generate synthetic IO stubs
+(
+	echo "function bailout() { throw new Error('~'+'~~${null}~'+stdio.err.join('$null')+'~$null~'+'~~');}"
+	if [ "${JSCLI%rhino}" != "$JSCLI" ] ; then
+		echo -E "importPackage(java.io);importPackage(java.lang);S=new BufferedReader( new InputStreamReader(System['in'])); stdio = { err: [], write: print, read: function(){return S.readLine(); }, writeError: function(d) { this.err.push(d); } };" 
+	elif [ "${JSCLI%node}" != "$JSCLI" ] ; then
+		cat $(dirname $0)/jspr-eval.node.js
+	else
+		bn='\\N'
+		echo -E "stdio = { err: [], write: print, read: readline, writeError: function(d) { this.err.push(d.toString().replace(/\n/g,'${bn}')); } };"
+	fi
+
+	echo "__file__='$1';" 
+
+	# remove first jsx line (shebang)
+	/bin/sed '1d' $1
+
+	echo "bailout();"
+) > $tmpfile
+
+
+if [ ! "$JSDBGFILE" ] ; then
+	export JSDBGFILE="$tmpfile.debug.txt"
+fi
+
+[ -n "$DEBUG" ] && echo "JSCLI $tmpfile" > $JSDBGFILE
+
+exec 3<&0
+exec 4>&1
+(
+	[ -n "$DEBUG" ] && echo "exec $JSCLI $tmpfile" >> $JSDBGFILE
+	ulimit -S -t $JSMAXCPU
+	$JSCLI $tmpfile
+	kill -USR2 $MYPID
+) 2> $tmpfile.stderr  0<&3 1>&4  &
+JSPID="$!"
+
+[ -n "$DEBUG" ] && echo "JSPID=$JSPID" >> $JSDBGFILE
+
+
+XCPU=
+killerPID=
+
+function usr2() {
+	kill -9 "$killerPID"  2>/dev/null
+	killerPID=
+	JSPID=
+
+	fgrep "CPU time limit" $tmpfile.stderr && \
+		XCPU="CPU time limit ($killerPID ulimit $JSMAXCPU secs) exceeded"
+	
+}
+
+function killer() {
+	if [ -n "$JSPID" ] ; then
+		TMP=$(ps --ppid $JSPID -o pid --no-headers | xargs echo $JSPID)
+		XCPU="CPU time limit (abs $JSTIMEOUT secs) exceeded ($TMP)"
+		kill -9 $TMP
+	fi
+}
+
+trap killer SIGUSR1
+trap usr2 SIGUSR2
+
+killerPID=$(
+	bash -c "( sleep $JSTIMEOUT & echo \$!; wait ; kill -USR1 $MYPID ) &" \
+		2>/dev/null | head -1)
+
+[ -n "$DEBUG" ] && echo "smjs is $JSPID" >> $JSDBGFILE 
+
+wait $JSPID
+
+[ -n "$DEBUG" ] && echo "/smjs was $JSPID" >> $JSDBGFILE
+
+SPID=
+JSPID=
+[ -n "$DEBUG" ] && echo "//JSCLI" >> $JSDBGFILE
+
+
+if [ -n "$XCPU" ] ; then
+	echo 'stdout: Status: HTTP/1.1 500 XCPU' >> /dev/stderr
+	echo 'stdout: ' >> /dev/stderr
+	echo "stdout: $XCPU" >> /dev/stderr
+fi
+
+/usr/bin/perl -pe \
+	"if (/~~~/){s/^.*?~~~${null}~//;s/~${null}~~~.*\$//g;s/${null}/\n/g;}else{\$_='';}" \
+	$tmpfile.stderr \
+	| grep -vE '^$' \
+	>> /dev/stderr
+
+[ -z "$DEBUG" ] && \
+	fgrep "$null" $tmpfile.stderr >/dev/null && rm $tmpfile $tmpfile.*
+
