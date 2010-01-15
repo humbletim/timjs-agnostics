@@ -1,0 +1,6 @@
+this is just a little factorial implementation tester
+pure JavaScript and pure C implementations of factorial (recursive / non-recursive) are explored
+$ sh build.sh should unpack the json lib used (see its COPYING) and compile the service exe
+you can test the exe is working with:
+$ echo '0 factorial [5]' | ./factorial
+
