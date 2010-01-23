@@ -11,7 +11,9 @@ following language hypothesis interesting:
 // note that the '1,'+ is there to coerces returning a value
 //  (required for certain VMs' eval implementations)
 
-This rather amazing "serialization feature" is a de facto standard across the JavaScript space.  It works in all VMs (and their downstream apps) that I can get my hands on...
+This rather amazing "serialization feature" is a de facto standard across the
+JavaScript space.  It works in all VMs and their downstream apps (that I can
+get my hands on...)
 
 To date:
  * Rhino
@@ -25,15 +27,15 @@ A few caveats so far about this approach:
  1) code comments disappear in the serialization process
 	(one workaround is to embed them as actual code constructs)
  2) SpiderMonkey (perhaps others) optimizes(?)-away several noops
-	(in FF, try javascript:alert(''+function(){ "your favorite string noop"; }); 
+	(in FF try javascript:alert(''+function(){"your favorite string noop";});
 	 to see what I mean)
  3) serialization does not create code new compatibilities across VMs
 	(that is, ES5 features will still not eval into ES3 containers)
 
-Anyway, I'll be trying out this technique for a portable modules and functional-
- block system, letting the actual host containers involved (server, client,
- command line, etc.) do all the heavy lifting.  Streaming and unstreaming
- function sources just became a whole lot easier I think!
+Anyway, going to try out this technique for a portable modules and functional-
+block system, letting the actual host containers involved (server, client,
+command line, etc.) do all the heavy lifting.  Streaming and unstreaming
+function sources just became a whole lot easier I think!
 
 2010.01.22
 
