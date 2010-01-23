@@ -1,0 +1,1 @@
+javascript:f=function myfunc(){ function inner() { return 6;} return 5; };(this.alert||this.puts||this.print||function(a){WScript.Echo(''+a);})(f+'' == eval('0,'+f+'')+'');void(0);
